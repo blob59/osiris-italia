@@ -11,6 +11,8 @@ export interface LumaUiContext {
   zoom?: number;
   data?: Record<string, unknown>;
   timestamp: string;
+  /** When false, update Luma's context without forcing the chat window open. */
+  openLuma?: boolean;
 }
 
 export const LUMA_CONTEXT_EVENT = 'osiris:luma-context';
