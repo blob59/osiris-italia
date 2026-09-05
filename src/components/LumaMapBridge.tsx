@@ -48,6 +48,7 @@ function contextFromPopup(popup: Element) {
       sourceLinks: links,
       selectionOrigin: 'map-popup',
     },
+    openLuma: false,
   };
 }
 
@@ -84,6 +85,7 @@ export default function LumaMapBridge() {
             viewerText: text.slice(0, 1200),
             selectionOrigin: 'camera-viewer',
           },
+          openLuma: false,
         });
         return;
       }
@@ -104,6 +106,7 @@ export default function LumaMapBridge() {
             label: `Webcam ${title || 'pubblica'}`,
             summary: 'Webcam pubblica selezionata direttamente sulla mappa. Non identificare persone e non inferire dati personali.',
             data: { selectionOrigin: 'cctv-map-tile' },
+            openLuma: false,
           });
         }
       }
@@ -119,6 +122,7 @@ export default function LumaMapBridge() {
             label: `Fonte live ${title || 'notizia'}`,
             summary: 'Fonte giornalistica/live selezionata direttamente sulla mappa. Distingui ciò che la fonte afferma dai fatti corroborati indipendentemente.',
             data: { selectionOrigin: 'news-map-tile' },
+            openLuma: false,
           });
         }
       }
