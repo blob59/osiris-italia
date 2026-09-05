@@ -17,12 +17,15 @@ type Preset = {
   icon: string;
   hot?: boolean;
   priority?: boolean;
+  /** Reload the dashboard with the public mobility feeds enabled. */
+  liveTraffic?: boolean;
 };
 
 const PRESETS: Preset[] = [
   { ...ITALIA_PRESETS.italia, label: 'ITALIA', icon: '🇮🇹', priority: true },
   { ...ITALIA_PRESETS.mediterraneo, label: 'MEDITERRANEO', icon: '🌊', priority: true },
   { ...ITALIA_PRESETS.europa, label: 'EUROPA', icon: '🇪🇺', priority: true },
+  { label: 'TRAFFICO LIVE', lat: 42.7, lng: 12.5, zoom: 5.2, icon: '📡', priority: true, liveTraffic: true },
   { label: 'GLOBALE', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
   { label: 'MEDIO ORIENTE', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
   { label: 'ASIA ORIENTALE', lat: 35, lng: 120, zoom: 4, icon: '🌏' },
@@ -38,6 +41,16 @@ const PRESETS: Preset[] = [
 
 export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
   const navigate = (p: Preset) => {
+    if (p.liveTraffic && typeof window !== 'undefined') {
+      // The dashboard restores the layer list from ?layers= on mount. A reload
+      // is deliberate here: it also starts the layer-aware polling loops from a
+      // clean state instead of waiting for each toggle to initialise itself.
+      const params = new URLSearchParams(window.location.search);
+      params.set('layers', 'flights,military,private,jets,maritime');
+      window.location.assign(`${window.location.pathname}?${params.toString()}`);
+      return;
+    }
+
     onNavigate(p.lat, p.lng, p.zoom);
     pushLumaContext({
       kind: 'region',
@@ -69,7 +82,7 @@ export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
           <button
             key={p.label}
             onClick={() => navigate(p)}
-            title={`Vai a ${p.label}`}
+            title={p.liveTraffic ? 'Attiva voli pubblici, velivoli classificati dal feed e traffico marittimo AIS' : `Vai a ${p.label}`}
             className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono tracking-wider border transition-all hover:scale-[1.02] active:scale-[0.98] ${
               p.priority
                 ? 'border-[var(--gold-primary)]/35 bg-[var(--gold-primary)]/8 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)]/15'
