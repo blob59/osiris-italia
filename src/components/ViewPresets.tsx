@@ -1,22 +1,34 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Globe, MapPin } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 interface ViewPresetsProps {
   onNavigate: (lat: number, lng: number, zoom: number) => void;
 }
 
-const PRESETS = [
-  { label: 'GLOBAL', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
-  { label: 'EUROPE', lat: 48, lng: 10, zoom: 4, icon: '🇪🇺' },
-  { label: 'MIDDLE EAST', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
-  { label: 'EAST ASIA', lat: 35, lng: 120, zoom: 4, icon: '🌏' },
-  { label: 'AMERICAS', lat: 25, lng: -90, zoom: 3, icon: '🌎' },
-  { label: 'UKRAINE', lat: 49, lng: 32, zoom: 6, icon: '⚔️', hot: true },
+type Preset = {
+  label: string;
+  lat: number;
+  lng: number;
+  zoom: number;
+  icon: string;
+  hot?: boolean;
+  priority?: boolean;
+};
+
+const PRESETS: Preset[] = [
+  { label: 'ITALIA', lat: 42.5, lng: 12.5, zoom: 5.6, icon: '🇮🇹', priority: true },
+  { label: 'MEDITERRANEO', lat: 36.5, lng: 16, zoom: 4.2, icon: '🌊', priority: true },
+  { label: 'EUROPA', lat: 48, lng: 10, zoom: 4, icon: '🇪🇺', priority: true },
+  { label: 'GLOBALE', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
+  { label: 'MEDIO ORIENTE', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
+  { label: 'ASIA ORIENTALE', lat: 35, lng: 120, zoom: 4, icon: '🌏' },
+  { label: 'AMERICHE', lat: 25, lng: -90, zoom: 3, icon: '🌎' },
+  { label: 'UCRAINA', lat: 49, lng: 32, zoom: 6, icon: '⚠️', hot: true },
   { label: 'AFRICA', lat: 5, lng: 20, zoom: 3.5, icon: '🌍' },
-  { label: 'S.E. ASIA', lat: 10, lng: 110, zoom: 4.5, icon: '🌏' },
-  { label: 'ARCTIC', lat: 75, lng: 0, zoom: 3.5, icon: '❄️' },
+  { label: 'SUDEST ASIATICO', lat: 10, lng: 110, zoom: 4.5, icon: '🌏' },
+  { label: 'ARTICO', lat: 75, lng: 0, zoom: 3.5, icon: '❄️' },
   { label: 'INDIA', lat: 22, lng: 78, zoom: 4.5, icon: '🇮🇳' },
   { label: 'AUSTRALIA', lat: -25, lng: 134, zoom: 4, icon: '🇦🇺' },
   { label: 'SUDAN', lat: 15, lng: 30, zoom: 5.5, icon: '⚠️', hot: true },
@@ -32,9 +44,9 @@ export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
     >
       <div className="flex items-center gap-2 mb-2">
         <Globe className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
-        <span className="hud-text text-[11px] text-[var(--text-primary)] tracking-widest">REGION PRESETS</span>
+        <span className="hud-text text-[11px] text-[var(--text-primary)] tracking-widest">VISTE RAPIDE</span>
         <span className="gotham-tag gotham-tag--critical" style={{ fontSize: '9px', padding: '1px 4px', marginLeft: 'auto' }}>
-          {PRESETS.filter(p => (p as any).hot).length} HOT
+          {PRESETS.filter(p => p.hot).length} AREE CALDE
         </span>
       </div>
       <div className="grid grid-cols-2 gap-1">
@@ -42,11 +54,18 @@ export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
           <button
             key={p.label}
             onClick={() => onNavigate(p.lat, p.lng, p.zoom)}
-            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono tracking-wider border border-transparent hover:border-[var(--border-primary)] hover:text-[var(--gold-primary)] transition-all hover:scale-[1.02] active:scale-[0.98] ${(p as any).hot ? 'text-[var(--alert-red)] hover:border-[var(--alert-red)]/30 hover:bg-[var(--alert-red)]/5' : 'text-[var(--text-muted)] hover:bg-[var(--hover-accent)]'}`}
+            title={`Vai a ${p.label}`}
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono tracking-wider border transition-all hover:scale-[1.02] active:scale-[0.98] ${
+              p.priority
+                ? 'border-[var(--gold-primary)]/35 bg-[var(--gold-primary)]/8 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)]/15'
+                : p.hot
+                  ? 'border-transparent text-[var(--alert-red)] hover:border-[var(--alert-red)]/30 hover:bg-[var(--alert-red)]/5'
+                  : 'border-transparent text-[var(--text-muted)] hover:border-[var(--border-primary)] hover:text-[var(--gold-primary)] hover:bg-[var(--hover-accent)]'
+            }`}
           >
             <span className="text-[10px] flex-shrink-0">{p.icon}</span>
             <span>{p.label}</span>
-            {(p as any).hot && <span className="w-1.5 h-1.5 rounded-full bg-[var(--alert-red)] animate-osiris-pulse ml-auto flex-shrink-0" />}
+            {p.hot && <span className="w-1.5 h-1.5 rounded-full bg-[var(--alert-red)] animate-osiris-pulse ml-auto flex-shrink-0" />}
           </button>
         ))}
       </div>
