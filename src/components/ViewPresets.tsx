@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
+import { ITALIA_PRESETS } from '@/lib/italia-presets';
 
 interface ViewPresetsProps {
   onNavigate: (lat: number, lng: number, zoom: number) => void;
@@ -18,9 +19,9 @@ type Preset = {
 };
 
 const PRESETS: Preset[] = [
-  { label: 'ITALIA', lat: 42.5, lng: 12.5, zoom: 5.6, icon: '🇮🇹', priority: true },
-  { label: 'MEDITERRANEO', lat: 36.5, lng: 16, zoom: 4.2, icon: '🌊', priority: true },
-  { label: 'EUROPA', lat: 48, lng: 10, zoom: 4, icon: '🇪🇺', priority: true },
+  { ...ITALIA_PRESETS.italia, label: 'ITALIA', icon: '🇮🇹', priority: true },
+  { ...ITALIA_PRESETS.mediterraneo, label: 'MEDITERRANEO', icon: '🌊', priority: true },
+  { ...ITALIA_PRESETS.europa, label: 'EUROPA', icon: '🇪🇺', priority: true },
   { label: 'GLOBALE', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
   { label: 'MEDIO ORIENTE', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
   { label: 'ASIA ORIENTALE', lat: 35, lng: 120, zoom: 4, icon: '🌏' },
