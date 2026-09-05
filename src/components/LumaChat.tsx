@@ -37,7 +37,10 @@ export default function LumaChat() {
   useEffect(() => {
     const handler = (event: Event) => {
       const custom = event as CustomEvent<LumaUiContext>;
-      if (custom.detail) setUiContext(custom.detail);
+      if (custom.detail) {
+        setUiContext(custom.detail);
+        setOpen(true);
+      }
     };
     window.addEventListener(LUMA_CONTEXT_EVENT, handler as EventListener);
     return () => window.removeEventListener(LUMA_CONTEXT_EVENT, handler as EventListener);
@@ -64,10 +67,7 @@ export default function LumaChat() {
       const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: contextualQuery,
-          context: emptyIntelligenceContext(),
-        }),
+        body: JSON.stringify({ query: contextualQuery, context: emptyIntelligenceContext() }),
       });
 
       const data = await response.json();
