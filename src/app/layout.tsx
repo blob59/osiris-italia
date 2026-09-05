@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import ErrorBoundary from '@/components/ErrorBoundary';
+import OsirisItaliaSignature from '@/components/OsirisItaliaSignature';
+import OsirisItaliaAbout from '@/components/OsirisItaliaAbout';
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -25,8 +27,8 @@ export const metadata: Metadata = {
     "flight tracker", "aircraft tracking", "satellite tracking", "earthquake monitor",
     "wildfire tracker", "NASA FIRMS", "cyber threat intelligence", "CVE tracker"
   ],
-  authors: [{ name: "OSIRIS Italia" }],
-  creator: "OSIRIS Italia",
+  authors: [{ name: "Franco Ficara" }],
+  creator: "Franco Ficara",
   publisher: "OSIRIS Italia",
   robots: { index: true, follow: true },
   icons: {
@@ -77,6 +79,7 @@ const jsonLd = {
   applicationCategory: "SecurityApplication",
   operatingSystem: "Web",
   browserRequirements: "Browser web moderno",
+  author: { "@type": "Person", name: "Franco Ficara" },
   offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", availability: "https://schema.org/InStock" },
   featureList: [
     "Analisi di fonti aperte e pubbliche",
@@ -101,6 +104,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="antialiased">
         <ErrorBoundary name="OSIRIS Italia Core">{children}</ErrorBoundary>
+        <OsirisItaliaSignature />
+        <OsirisItaliaAbout />
       </body>
     </html>
   );
