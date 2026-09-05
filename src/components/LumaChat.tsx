@@ -39,7 +39,7 @@ export default function LumaChat() {
       const custom = event as CustomEvent<LumaUiContext>;
       if (custom.detail) {
         setUiContext(custom.detail);
-        setOpen(true);
+        if (custom.detail.openLuma !== false) setOpen(true);
       }
     };
     window.addEventListener(LUMA_CONTEXT_EVENT, handler as EventListener);
