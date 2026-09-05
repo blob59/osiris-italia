@@ -1,5 +1,6 @@
 import LumaChat from '@/components/LumaChat';
 import LumaNaturalEvents from '@/components/LumaNaturalEvents';
+import SourcesToLumaPanel from '@/components/SourcesToLumaPanel';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       </div>
       {children}
       <LumaNaturalEvents />
+      <SourcesToLumaPanel />
       <LumaChat />
     </>
   );
