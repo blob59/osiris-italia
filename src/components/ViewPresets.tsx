@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Globe } from 'lucide-react';
 import { ITALIA_PRESETS } from '@/lib/italia-presets';
+import { pushLumaContext } from '@/lib/luma-context';
 
 interface ViewPresetsProps {
   onNavigate: (lat: number, lng: number, zoom: number) => void;
@@ -36,6 +37,19 @@ const PRESETS: Preset[] = [
 ];
 
 export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
+  const navigate = (p: Preset) => {
+    onNavigate(p.lat, p.lng, p.zoom);
+    pushLumaContext({
+      kind: 'region',
+      label: p.label,
+      summary: `Vista rapida selezionata: ${p.label}`,
+      lat: p.lat,
+      lng: p.lng,
+      zoom: p.zoom,
+      data: { hot: Boolean(p.hot), priority: Boolean(p.priority) },
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -54,7 +68,7 @@ export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
         {PRESETS.map(p => (
           <button
             key={p.label}
-            onClick={() => onNavigate(p.lat, p.lng, p.zoom)}
+            onClick={() => navigate(p)}
             title={`Vai a ${p.label}`}
             className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-mono tracking-wider border transition-all hover:scale-[1.02] active:scale-[0.98] ${
               p.priority
