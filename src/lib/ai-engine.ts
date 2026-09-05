@@ -32,6 +32,8 @@ Quando utile, struttura la risposta con: SINTESI, DATI OSSERVATI, VALUTAZIONE, C
 const BRIEFING_PROMPT = `Genera il briefing OSIRIS Italia usando soltanto i dati operativi forniti.
 Includi: sintesi generale; eventi prioritari; rischi naturali; quadro geopolitico dalle fonti disponibili; minacce cyber; possibili correlazioni; elementi da monitorare; livello di confidenza e lacune informative. Evita conclusioni non supportate.`;
 
+const GEMINI_MODEL = 'gemini-2.5-flash';
+
 export function createGeminiClient(apiKey:string):GoogleGenerativeAI { return new GoogleGenerativeAI(apiKey); }
 let _keyIndex=0;
 export function rotateApiKey(keys:string[]):string { if(keys.length===0) throw new Error('Nessuna chiave API disponibile'); const key=keys[_keyIndex%keys.length]; _keyIndex=(_keyIndex+1)%keys.length; return key; }
@@ -47,13 +49,13 @@ function serializeContext(context:IntelligenceContext):string {
 }
 
 export async function analyzeIntelligence(client:GoogleGenerativeAI,context:IntelligenceContext,userQuery:string):Promise<string>{
-  const model:GenerativeModel=client.getGenerativeModel({model:'gemini-2.0-flash',systemInstruction:SYSTEM_PROMPT});
+  const model:GenerativeModel=client.getGenerativeModel({model:GEMINI_MODEL,systemInstruction:SYSTEM_PROMPT});
   const prompt=`## DATI OPERATIVI DISPONIBILI\n${serializeContext(context)}\n\n## DOMANDA DELL'UTENTE\n${userQuery}\n\nRispondi come Luma basandoti sui dati sopra.`;
   const result=await model.generateContent(prompt); return result.response.text();
 }
 
 export async function generateBriefing(client:GoogleGenerativeAI,context:IntelligenceContext):Promise<string>{
-  const model:GenerativeModel=client.getGenerativeModel({model:'gemini-2.0-flash',systemInstruction:SYSTEM_PROMPT});
+  const model:GenerativeModel=client.getGenerativeModel({model:GEMINI_MODEL,systemInstruction:SYSTEM_PROMPT});
   const prompt=`${BRIEFING_PROMPT}\n\n## DATI OPERATIVI DISPONIBILI\n${serializeContext(context)}\n\nGenera il briefing ora.`;
   const result=await model.generateContent(prompt); return result.response.text();
 }
