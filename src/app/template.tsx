@@ -1,3 +1,5 @@
+import LumaChat from '@/components/LumaChat';
+
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -16,6 +18,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       {children}
+      <LumaChat />
     </>
   );
 }
