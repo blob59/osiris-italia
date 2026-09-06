@@ -4,6 +4,7 @@ import OsirisItaliaSignature from '@/components/OsirisItaliaSignature';
 import OsirisItaliaAbout from '@/components/OsirisItaliaAbout';
 import FlightAutoStart from '@/components/FlightAutoStart';
 import AircraftTrackOverlay from '@/components/AircraftTrackOverlay';
+import AircraftIconEnhancer from '@/components/AircraftIconEnhancer';
 import MobileAviationQuickToggle from '@/components/MobileAviationQuickToggle';
 import "./globals.css";
 
@@ -108,6 +109,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="antialiased">
         <FlightAutoStart />
         <AircraftTrackOverlay />
+        <AircraftIconEnhancer />
         <MobileAviationQuickToggle />
         <ErrorBoundary name="OSIRIS Italia Core">{children}</ErrorBoundary>
         <OsirisItaliaSignature />
