@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OsirisItaliaSignature from '@/components/OsirisItaliaSignature';
 import OsirisItaliaAbout from '@/components/OsirisItaliaAbout';
+import FlightAutoStart from '@/components/FlightAutoStart';
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body className="antialiased">
+        <FlightAutoStart />
         <ErrorBoundary name="OSIRIS Italia Core">{children}</ErrorBoundary>
         <OsirisItaliaSignature />
         <OsirisItaliaAbout />
