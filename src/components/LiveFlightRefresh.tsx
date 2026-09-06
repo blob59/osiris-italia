@@ -26,11 +26,10 @@ const SOURCE_BUCKETS: Array<[string, keyof FlightPayload]> = [
   ['military', 'military_flights'],
 ];
 
-function featureCollection(rows: Flight[] = {}) {
-  const safeRows = Array.isArray(rows) ? rows : [];
+function featureCollection(rows: Flight[] = []) {
   return {
     type: 'FeatureCollection' as const,
-    features: safeRows
+    features: rows
       .filter((f) => Number.isFinite(f?.lat) && Number.isFinite(f?.lng))
       .map((f) => ({
         type: 'Feature' as const,
@@ -75,7 +74,6 @@ export default function LiveFlightRefresh() {
       }
     };
 
-    // Let MapLibre finish booting and AircraftTrackOverlay capture the map.
     timer = setTimeout(tick, 6000);
     const onVisible = () => {
       if (!document.hidden) {
