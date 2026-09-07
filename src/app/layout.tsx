@@ -7,6 +7,7 @@ import AircraftTrackOverlay from '@/components/AircraftTrackOverlay';
 import AircraftIconEnhancer from '@/components/AircraftIconEnhancer';
 import LiveFlightRefresh from '@/components/LiveFlightRefresh';
 import MobileAviationQuickToggle from '@/components/MobileAviationQuickToggle';
+import CctvIconEnhancer from '@/components/CctvIconEnhancer';
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AircraftIconEnhancer />
         <LiveFlightRefresh />
         <MobileAviationQuickToggle />
+        <CctvIconEnhancer />
         <ErrorBoundary name="OSIRIS Italia Core">{children}</ErrorBoundary>
         <OsirisItaliaSignature />
         <OsirisItaliaAbout />
