@@ -21,89 +21,51 @@ const LINE_ID = 'osiris-italia-aircraft-tracks-line';
 const LABEL_ID = 'osiris-italia-aircraft-tracks-label';
 
 function featureCollection(rows: TrackRow[]): GeoJSON.FeatureCollection<GeoJSON.LineString> {
-  return {
-    type: 'FeatureCollection',
-    features: rows.map(row => ({
-      type: 'Feature',
-      properties: { icao24: row.icao24, callsign: row.callsign },
-      geometry: { type: 'LineString', coordinates: row.coordinates },
-    })),
-  };
+  return { type: 'FeatureCollection', features: rows.map(row => ({
+    type: 'Feature', properties: { icao24: row.icao24, callsign: row.callsign },
+    geometry: { type: 'LineString', coordinates: row.coordinates },
+  })) };
 }
 
 function ensureLayers(map: maplibregl.Map) {
   if (!map.isStyleLoaded()) return false;
-  if (!map.getSource(SOURCE_ID)) {
-    map.addSource(SOURCE_ID, { type: 'geojson', data: featureCollection([]) });
-  }
-  if (!map.getLayer(HALO_ID)) {
-    map.addLayer({
-      id: HALO_ID,
-      type: 'line',
-      source: SOURCE_ID,
-      paint: { 'line-color': '#05070b', 'line-width': 7, 'line-opacity': 0.72 },
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-    });
-  }
-  if (!map.getLayer(LINE_ID)) {
-    map.addLayer({
-      id: LINE_ID,
-      type: 'line',
-      source: SOURCE_ID,
-      paint: { 'line-color': '#35d8ff', 'line-width': 3, 'line-opacity': 0.95 },
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-    });
-  }
-  if (!map.getLayer(LABEL_ID)) {
-    map.addLayer({
-      id: LABEL_ID,
-      type: 'symbol',
-      source: SOURCE_ID,
-      layout: {
-        'symbol-placement': 'line-center',
-        'text-field': ['get', 'callsign'],
-        'text-size': 11,
-        'text-allow-overlap': false,
-      },
-      paint: { 'text-color': '#b9f2ff', 'text-halo-color': '#05070b', 'text-halo-width': 1.5 },
-    });
-  }
+  if (!map.getSource(SOURCE_ID)) map.addSource(SOURCE_ID, { type: 'geojson', data: featureCollection([]) });
+  if (!map.getLayer(HALO_ID)) map.addLayer({ id: HALO_ID, type: 'line', source: SOURCE_ID,
+    paint: { 'line-color': '#05070b', 'line-width': 7, 'line-opacity': 0.72 },
+    layout: { 'line-cap': 'round', 'line-join': 'round' } });
+  if (!map.getLayer(LINE_ID)) map.addLayer({ id: LINE_ID, type: 'line', source: SOURCE_ID,
+    paint: { 'line-color': '#35d8ff', 'line-width': 3, 'line-opacity': 0.95 },
+    layout: { 'line-cap': 'round', 'line-join': 'round' } });
+  if (!map.getLayer(LABEL_ID)) map.addLayer({ id: LABEL_ID, type: 'symbol', source: SOURCE_ID,
+    layout: { 'symbol-placement': 'line-center', 'text-field': ['get','callsign'], 'text-size': 11, 'text-allow-overlap': false },
+    paint: { 'text-color': '#b9f2ff', 'text-halo-color': '#05070b', 'text-halo-width': 1.5 } });
   return true;
 }
 
 function drawRows(rows: TrackRow[]) {
   const map = window.__osirisItaliaMap;
   if (!map || !ensureLayers(map)) return;
-  const src = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  src?.setData(featureCollection(rows));
+  (map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined)?.setData(featureCollection(rows));
 }
 
 async function loadTrack(flight: WatchRequest): Promise<TrackRow | null> {
   const icao24 = String(flight.icao24 || '').trim().toLowerCase();
   if (!/^[0-9a-f]{6}$/.test(icao24)) return null;
   try {
-    const response = await fetch(`/api/aircraft?icao24=${encodeURIComponent(icao24)}`, { cache: 'no-store' });
+    const response = await fetch(`/api/aircraft?icao24=${encodeURIComponent(icao24)}&_t=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return null;
     const detail = await response.json() as AircraftDetail;
-    const coordinates = Array.isArray(detail.track)
-      ? detail.track.filter((p): p is [number, number] => Array.isArray(p) && p.length === 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]))
-      : [];
+    const coordinates = Array.isArray(detail.track) ? detail.track.filter((p): p is [number, number] =>
+      Array.isArray(p) && p.length === 2 && Number.isFinite(p[0]) && Number.isFinite(p[1])) : [];
     if (coordinates.length < 2) return null;
     return { icao24, callsign: flight.callsign?.trim() || icao24.toUpperCase(), coordinates };
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
-/**
- * OSIRIS Italia aircraft-track bridge.
- * It draws only positions actually reported by the existing /api/aircraft endpoint.
- * No straight airport-to-airport line, interpolation or predicted future path is added.
- */
+/** Draws only the real reported history returned by /api/aircraft. */
 export default function AircraftTrackOverlay() {
   useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
-
     const proto = maplibregl.Map.prototype as maplibregl.Map & { addSource: maplibregl.Map['addSource'] };
     const originalAddSource = proto.addSource;
     if (!window.__osirisItaliaTrackBridgeInstalled) {
@@ -143,30 +105,20 @@ export default function AircraftTrackOverlay() {
 
     const watchPoll = window.setInterval(wrapWatch, 400);
     wrapWatch();
-
-    const refreshTimer = window.setInterval(() => {
-      watched.forEach(flight => void refreshOne(flight));
-    }, 120000);
-
+    // Keep the selected real flown track fresh alongside the 20s aircraft feed.
+    const refreshTimer = window.setInterval(() => watched.forEach(f => void refreshOne(f)), 30000);
     const onStyle = () => drawRows([...tracks.values()]);
     const stylePoll = window.setInterval(() => {
       const map = window.__osirisItaliaMap;
-      if (map) {
-        map.off('styledata', onStyle);
-        map.on('styledata', onStyle);
-        drawRows([...tracks.values()]);
-      }
+      if (map) { map.off('styledata', onStyle); map.on('styledata', onStyle); drawRows([...tracks.values()]); }
     }, 1500);
 
     return () => {
       stopped = true;
-      window.clearInterval(watchPoll);
-      window.clearInterval(refreshTimer);
-      window.clearInterval(stylePoll);
+      window.clearInterval(watchPoll); window.clearInterval(refreshTimer); window.clearInterval(stylePoll);
       window.__osirisItaliaMap?.off('styledata', onStyle);
       if (window.osirisWatchFlight === wrappedFn && originalWatch) window.osirisWatchFlight = originalWatch;
     };
   }, []);
-
   return null;
 }
