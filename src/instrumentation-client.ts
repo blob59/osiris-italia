@@ -1,14 +1,4 @@
-// OSIRIS Italia — Render cold-start CCTV compatibility shim.
-//
-// The CCTV API fans out to many upstream camera catalogues. On a cold Render
-// instance some slow regions can miss the API's per-region time budget on the
-// very first request, while their in-flight fetches continue and warm the
-// server-side source cache. The dashboard normally fetches CCTV only once, so a
-// partial first response can otherwise stay on screen for the whole session.
-//
-// Next.js runs instrumentation-client before React hydration, which lets us
-// transparently retry only that first global CCTV catalogue request when it is
-// obviously incomplete. No map rendering or camera-source logic is changed.
+// OSIRIS Italia — Render cold-start CCTV compatibility shim + lightweight branding.
 
 const nativeFetch = window.fetch.bind(window);
 
@@ -36,18 +26,11 @@ window.fetch = async function osirisItaliaFetch(
   try {
     const payload = await first.clone().json();
     const total = Number(payload?.total ?? payload?.cameras?.length ?? 0);
-
-    // A healthy warm catalogue currently contains well over 10k cameras.
-    // Keep the threshold deliberately conservative so normal source churn does
-    // not add delay; it only catches the clearly partial cold-start response.
     if (total >= 8000) return first;
   } catch {
-    // If the response is not inspectable, preserve the original behaviour.
     return first;
   }
 
-  // Let the timed-out regional fetches finish and populate sourceCache, then
-  // bypass the CDN/browser cache with a unique retry URL.
   await new Promise(resolve => setTimeout(resolve, 13_500));
 
   const separator = url.includes('?') ? '&' : '?';
@@ -60,3 +43,38 @@ window.fetch = async function osirisItaliaFetch(
     return first;
   }
 };
+
+function applyOsirisItaliaBranding() {
+  document.title = 'OSIRIS ITALIA — Franco Ficara';
+
+  const headings = Array.from(document.querySelectorAll('h1'));
+  for (const heading of headings) {
+    if (heading.textContent?.trim() === 'OSIRIS') {
+      heading.textContent = 'OSIRIS ITALIA';
+      heading.setAttribute('title', 'OSIRIS ITALIA — Franco Ficara');
+
+      const parent = heading.parentElement;
+      if (parent && !parent.querySelector('[data-osiris-italia-author]')) {
+        const author = document.createElement('span');
+        author.dataset.osirisItaliaAuthor = 'true';
+        author.textContent = 'FRANCO FICARA';
+        author.style.fontFamily = 'monospace';
+        author.style.fontSize = '9px';
+        author.style.letterSpacing = '0.22em';
+        author.style.color = '#00e5ff';
+        author.style.opacity = '0.9';
+        author.style.textTransform = 'uppercase';
+        parent.appendChild(author);
+      }
+    }
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', applyOsirisItaliaBranding, { once: true });
+} else {
+  applyOsirisItaliaBranding();
+}
+
+const brandingObserver = new MutationObserver(() => applyOsirisItaliaBranding());
+brandingObserver.observe(document.documentElement, { childList: true, subtree: true });
