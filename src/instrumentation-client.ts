@@ -44,28 +44,66 @@ window.fetch = async function osirisItaliaFetch(
   }
 };
 
+function makeAuthorBadge(parent: Element) {
+  if (parent.querySelector('[data-osiris-italia-author]')) return;
+  const author = document.createElement('span');
+  author.dataset.osirisItaliaAuthor = 'true';
+  author.textContent = 'FRANCO FICARA';
+  author.style.fontFamily = 'monospace';
+  author.style.fontSize = '9px';
+  author.style.fontWeight = '700';
+  author.style.letterSpacing = '0.22em';
+  author.style.color = '#00e5ff';
+  author.style.opacity = '0.95';
+  author.style.textTransform = 'uppercase';
+  author.style.textShadow = '0 0 8px rgba(0,229,255,.35)';
+  parent.appendChild(author);
+}
+
 function applyOsirisItaliaBranding() {
   document.title = 'OSIRIS ITALIA — Franco Ficara';
 
-  const headings = Array.from(document.querySelectorAll('h1'));
-  for (const heading of headings) {
-    if (heading.textContent?.trim() === 'OSIRIS') {
+  // Main map header. Keep the original Eye of Horus and all map logic untouched.
+  for (const heading of Array.from(document.querySelectorAll('h1'))) {
+    const text = heading.textContent?.trim();
+    if (text === 'OSIRIS' || text === 'OSIRIS ITALIA') {
       heading.textContent = 'OSIRIS ITALIA';
       heading.setAttribute('title', 'OSIRIS ITALIA — Franco Ficara');
+      if (heading.parentElement) makeAuthorBadge(heading.parentElement);
+    }
+  }
 
-      const parent = heading.parentElement;
-      if (parent && !parent.querySelector('[data-osiris-italia-author]')) {
-        const author = document.createElement('span');
-        author.dataset.osirisItaliaAuthor = 'true';
-        author.textContent = 'FRANCO FICARA';
-        author.style.fontFamily = 'monospace';
-        author.style.fontSize = '9px';
-        author.style.letterSpacing = '0.22em';
-        author.style.color = '#00e5ff';
-        author.style.opacity = '0.9';
-        author.style.textTransform = 'uppercase';
-        parent.appendChild(author);
-      }
+  // Splash screen uses individual letter spans rather than an h1.
+  const candidates = Array.from(document.querySelectorAll('div'));
+  for (const el of candidates) {
+    const children = Array.from(el.children);
+    if (children.length !== 6) continue;
+    const word = children.map(c => c.textContent || '').join('');
+    if (word !== 'OSIRIS') continue;
+    if (el.getAttribute('data-osiris-italia-splash') === 'true') continue;
+
+    el.setAttribute('data-osiris-italia-splash', 'true');
+    // Do not disturb Framer Motion's six animated letters; add ITALIA beside them.
+    const italy = document.createElement('span');
+    italy.textContent = ' ITALIA';
+    italy.style.color = '#d4af37';
+    italy.style.fontFamily = 'monospace';
+    italy.style.fontSize = 'clamp(1.5rem, 4vw, 3rem)';
+    italy.style.fontWeight = '700';
+    italy.style.letterSpacing = '.18em';
+    italy.style.marginLeft = '.25em';
+    italy.style.textShadow = '0 0 30px rgba(212,175,55,.2)';
+    el.appendChild(italy);
+  }
+
+  // Replace only presentation copy, never data/source labels.
+  for (const el of Array.from(document.querySelectorAll('p, span'))) {
+    const text = el.textContent?.trim();
+    if (text === 'GLOBAL INTELLIGENCE PLATFORM') {
+      el.textContent = 'PIATTAFORMA DI INTELLIGENCE OPEN SOURCE';
+    }
+    if (text === 'REAL-TIME GLOBAL MONITORING · FLIGHTS · MARITIME · SATELLITES · CCTV · WEATHER · CYBER THREATS') {
+      el.textContent = 'MONITORAGGIO GLOBALE IN TEMPO REALE · VOLI · MARITTIMO · SATELLITI · CCTV · METEO · MINACCE INFORMATICHE';
     }
   }
 }
