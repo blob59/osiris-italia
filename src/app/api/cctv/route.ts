@@ -671,6 +671,12 @@ function getRegionsForBounds(lat: number, lng: number, radius: number): string[]
   // European gaps (Azores in the west through northern Norway)
   if (lat > 35 && lat < 72 && lng > -32 && lng < 32) regions.push('europe-live');
 
+  // Public webcams synced from upstream OSIRIS.
+  if (lat > 50.7 && lat < 53.7 && lng > 3.3 && lng < 7.3) regions.push('public-webcams-nl');
+  if (lat > 27 && lat < 72 && lng > -18 && lng < 31) regions.push('public-webcams-europe');
+  if (lat > 11 && lat < 52 && lng > -124 && lng < -59) regions.push('public-webcams-americas');
+  if (lat > -35 && lat < 62 && lng > 30 && lng < 152) regions.push('public-webcams-rest');
+
   return regions.length > 0 ? regions : ['uk', 'us-east']; // Default fallback
 }
 
