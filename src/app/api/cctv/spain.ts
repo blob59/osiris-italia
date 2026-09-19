@@ -120,7 +120,7 @@ async function fetchDGTCameras(): Promise<CctvCamera[]> {
 
   try {
     const response = await stealthFetch('https://www.dgt.es/.content/.assets/json/camaras.json', {
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(9000),
     });
     if (!response.ok) return dgtCache?.cameras || [];
     const data = await response.json();
