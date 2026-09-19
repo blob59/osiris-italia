@@ -38,7 +38,7 @@ import { fetchFloridaCameras } from './florida';
 import { fetchGeorgiaCameras } from './georgia';
 import { fetchNorthCarolinaCameras } from './northcarolina';
 import { fetchArizonaCameras } from './arizona';
-import { fetchEastAsiaCameras, fetchSeAsiaCameras, fetchWestAsiaCameras } from './opencctv';
+import { fetchEastAsiaCameras, fetchSeAsiaCameras, fetchWestAsiaCameras, fetchWestEuropeCameras } from './opencctv';
 import {
   fetchLatamLiveCameras,
   fetchAfricaLiveCameras,
@@ -629,6 +629,8 @@ function getRegionsForBounds(lat: number, lng: number, radius: number): string[]
   if (inPoland) regions.push('poland');
   if (inFinland) regions.push('finland');
   if (inIceland) regions.push('iceland');
+  // Supplement sparse Western-European national catalogues with OpenCCTV.
+  if (lat > 35 && lat < 52 && lng > -10 && lng < 19) regions.push('europewest');
 
   // Middle East
   const inMiddleEast = lat > 29 && lat < 34.5 && lng > 34 && lng < 36.5;
