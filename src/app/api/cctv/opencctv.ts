@@ -48,6 +48,8 @@ const REGIONS: Record<string, { bounds: Bounds; cap: number }> = {
   /* The Gulf, Iran, Central Asia and the subcontinent — ~950 between them, so
      the cap is never the binding constraint here; it is a guard, not a quota. */
   westasia: { bounds: { minLat: 5, maxLat: 56, minLng: 25, maxLng: 92 }, cap: 600 },
+  /* Western Europe — supplements national feeds with verified OpenCCTV records. */
+  europewest: { bounds: { minLat: 35, maxLat: 52, minLng: -10, maxLng: 19 }, cap: 1800 },
 };
 
 /** The index, as three parallel arrays. */
@@ -209,3 +211,5 @@ function loader(region: string, bounds: Bounds, cap: number) {
 export const fetchEastAsiaCameras = cachedSource('eastasia', loader('East Asia', REGIONS.eastasia.bounds, REGIONS.eastasia.cap));
 export const fetchSeAsiaCameras = cachedSource('seasia', loader('Southeast Asia', REGIONS.seasia.bounds, REGIONS.seasia.cap));
 export const fetchWestAsiaCameras = cachedSource('westasia', loader('West & Central Asia', REGIONS.westasia.bounds, REGIONS.westasia.cap));
+
+export const fetchWestEuropeCameras = cachedSource('europewest', loader('Western Europe', REGIONS.europewest.bounds, REGIONS.europewest.cap));
