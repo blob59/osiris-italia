@@ -379,13 +379,18 @@ async function fetchEuropeCameras(): Promise<any[]> {
   /* The Netherlands used to be fetched here from opendata.ndw.nu/cameras.json.
      NDW retired that dataset and it 404s; ./netherlands now serves the country
      from the Rijkswaterstaat feed, which is still published. */
-  try {
-    cams.push(...await fetchNetherlandsCameras());
-  } catch (e) {
-    console.warn('[OSIRIS] Netherlands cameras failed — absent from this refresh:', e instanceof Error ? e.message : e);
-  }
+  // Fetch independent European sources in parallel so their individual
+  // timeouts cannot add up past the region's 12s budget.
+  const [netherlands, asfinag] = await Promise.allSettled([
+    fetchNetherlandsCameras(),
+    fetchAsfinagCameras(),
+  ]);
 
-  cams.push(...await fetchAsfinagCameras());
+  if (netherlands.status === 'fulfilled') cams.push(...netherlands.value);
+  else console.warn('[OSIRIS] Netherlands cameras failed — absent from this refresh:', netherlands.reason);
+
+  if (asfinag.status === 'fulfilled') cams.push(...asfinag.value);
+  else console.warn('[OSIRIS] ASFINAG cameras failed — absent from this refresh:', asfinag.reason);
 
   return cams.filter((c: any) => c.lat && c.lng);
 }
