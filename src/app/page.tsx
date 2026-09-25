@@ -454,7 +454,12 @@ export default function Dashboard() {
   }, []);
   // Entity click handler (hoisted from JSX to comply with Rules of Hooks - Fixes #113)
   const handleEntityClick = useCallback((entity: any) => {
-    if (entity?.type === 'cctv') setActiveCamera(entity);
+    if (entity?.type === 'cctv') {
+      setActiveCamera(entity);
+      if (Number.isFinite(entity.lat) && Number.isFinite(entity.lng)) {
+        setFlyToLocation({ lat: entity.lat, lng: entity.lng, zoom: 15, ts: Date.now() });
+      }
+    }
     if (entity?.type === 'live_news' && entity.url) {
       setLiveFeedUrl(entity.url);
       setLiveFeedName(entity.name);
@@ -1135,6 +1140,17 @@ export default function Dashboard() {
           aircraftAirports={aircraftAirports}
         />
       </ErrorBoundary>
+
+      {activeCamera && Number.isFinite(activeCamera.lat) && Number.isFinite(activeCamera.lng) && (
+        <div className="observation-overlay" aria-hidden="true">
+          <div className="observation-reticle"><span className="observation-crosshair" /></div>
+          <div className="observation-coordinates">
+            <span>AREA DI OSSERVAZIONE</span>
+            <strong>{activeCamera.lat.toFixed(4)}° · {activeCamera.lng.toFixed(4)}°</strong>
+            <span>{activeCamera.city || activeCamera.name || 'Telecamera selezionata'}</span>
+          </div>
+        </div>
+      )}
 
       {/* ── DIRECTIONS — opens beside the right-hand tool rail ── */}
       <div
