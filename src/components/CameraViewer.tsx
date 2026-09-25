@@ -169,7 +169,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
           className={`fixed z-[500] ${
             fullscreen 
               ? 'inset-2 md:inset-4' 
-              : 'bottom-[70px] left-2 right-2 md:bottom-6 md:right-6 md:left-auto md:w-[480px]'
+              : 'bottom-[70px] left-2 right-2 md:bottom-auto md:top-1/2 md:left-1/2 md:right-auto md:w-[min(44vw,520px)] md:-translate-x-1/2 md:-translate-y-1/2'
           }`}
         >
           <div className="overflow-hidden h-full flex flex-col bg-black/85 backdrop-blur-xl border border-[var(--border-primary)]" style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8)' }}>
@@ -190,7 +190,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                 </div>
                 <div className="flex items-center gap-3">
                   <span>{currentTime}</span>
-                  <span className="text-[var(--gold-primary)]">SECURE UPLINK</span>
+                  <span className="text-[var(--gold-primary)]">SORGENTE PUBBLICA</span>
                 </div>
               </div>
 
@@ -252,7 +252,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
               <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-30 backdrop-blur-sm">
                 <div className="text-center">
                   <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'var(--gold-dim)', borderTopColor: 'transparent' }} />
-                  <span className="text-[10px] font-mono tracking-[0.25em]" style={{ color: 'var(--gold-primary)' }}>DECRYPTING FEED...</span>
+                  <span className="text-[10px] font-mono tracking-[0.25em]" style={{ color: 'var(--gold-primary)' }}>CARICAMENTO SORGENTE...</span>
                 </div>
               </div>
             )}
@@ -344,7 +344,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
               <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/80 border border-[var(--gold-primary)]/50 px-2 py-1 shadow-[0_0_10px_rgba(0,0,0,0.8)]">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
                 <span className="text-[9px] font-mono text-white tracking-[0.2em]">
-                  {watchLiveUrl ? 'SNAPSHOT' : streamType === 'jpg' ? 'LIVE SAT-LINK' : 'LIVE FEED'}
+                  {watchLiveUrl || streamType === 'jpg' ? 'IMMAGINE AGGIORNATA' : 'VIDEO DALLA SORGENTE'}
                 </span>
               </div>
             )}
@@ -379,14 +379,14 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                 <div className="flex flex-col">
                   <span className="text-[9px] text-[var(--text-muted)] font-mono tracking-widest">FEED TYPE</span>
                   <span className="text-[9px] text-white font-mono tracking-widest uppercase">
-                    {view === 'offline' ? (gone ? 'WITHDRAWN' : 'OFFLINE') : watchLiveUrl ? 'SNAPSHOT' : externalOnly ? 'EXTERNAL' : resolvedEmbed ? 'YOUTUBE LIVE' : streamType}
+                    {view === 'offline' ? (gone ? 'WITHDRAWN' : 'OFFLINE') : watchLiveUrl || streamType === 'jpg' ? 'SNAPSHOT' : externalOnly ? 'EXTERNAL' : resolvedEmbed ? 'YOUTUBE LIVE' : streamType}
                   </span>
                 </div>
                 <div className="flex flex-col border-l border-white/10 pl-4">
                   <span className="text-[9px] text-[var(--text-muted)] font-mono tracking-widest">STATUS</span>
                   {/* Nothing is being received locally for an external feed — don't claim otherwise. */}
                   <span className={`text-[9px] font-mono tracking-widest ${externalOnly ? 'text-[var(--gold-primary)]' : 'text-[var(--alert-green)]'}`}>
-                    {view === 'offline' ? (gone ? 'REMOVED BY SOURCE' : 'OFF AIR AT SOURCE') : watchLiveUrl ? 'LIVE VIDEO AT SOURCE' : externalOnly ? 'HOSTED OFF-PLATFORM' : 'ACTIVE / RECORDING'}
+                    {view === 'offline' ? (gone ? 'REMOVED BY SOURCE' : 'OFF AIR AT SOURCE') : watchLiveUrl ? 'LIVE VIDEO AT SOURCE' : externalOnly ? 'HOSTED OFF-PLATFORM' : streamType === 'jpg' ? 'STILL IMAGE FROM SOURCE' : 'VIDEO FROM SOURCE'}
                   </span>
                 </div>
               </div>
