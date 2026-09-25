@@ -17,6 +17,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [snapshotFallbackId, setSnapshotFallbackId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>('');
 
@@ -35,6 +36,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
   const hlsRef = useRef<Hls | null>(null);
 
   const externalFeedUrl = camera?.external_url || camera?.feed_url;
+  const sourcePageUrl = camera?.external_url || (camera?.stream_type === 'iframe' ? camera?.stream_url : null);
   const hostedOffPlatform = isHostedOffPlatform(camera);
 
   /**
@@ -78,7 +80,8 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
     return () => { live = false; };
   }, [resolveKey]);
 
-  const streamType = resolvedEmbed ? 'iframe' : (camera?.stream_type || 'jpg');
+  const snapshotFallback = Boolean(camera?.feed_url && camera?.id === snapshotFallbackId);
+  const streamType = snapshotFallback ? 'jpg' : resolvedEmbed ? 'iframe' : (camera?.stream_type || 'jpg');
   const streamUrl: string | undefined = resolvedEmbed || camera?.stream_url;
   const view = offPlatformView({ hostedOffPlatform, resolving, resolvedEmbed, offline });
   const externalOnly = view !== 'inline';
@@ -111,7 +114,10 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
           videoRef.current?.play().catch(() => {});
         });
         hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) setError(true);
+          if (data.fatal) {
+            if (camera.feed_url) setSnapshotFallbackId(camera.id);
+            else setError(true);
+          }
         });
       } else if (videoRef.current?.canPlayType('application/vnd.apple.mpegurl')) {
         videoRef.current.src = camera.stream_url;
@@ -119,6 +125,13 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
           setLoading(false);
           videoRef.current?.play().catch(() => {});
         });
+        videoRef.current.addEventListener('error', () => {
+          if (camera.feed_url) setSnapshotFallbackId(camera.id);
+          else setError(true);
+        }, { once: true });
+      } else {
+        if (camera.feed_url) setSnapshotFallbackId(camera.id);
+        else { setLoading(false); setError(true); }
       }
       return;
     }
@@ -260,22 +273,22 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
             {view === 'resolving' ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30 backdrop-blur-sm p-4 text-center">
                 <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mb-3" style={{ borderColor: 'var(--gold-dim)', borderTopColor: 'transparent' }} />
-                <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--gold-primary)' }}>ACQUIRING UPLINK</p>
-                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 uppercase">Locating a direct feed</p>
+                <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--gold-primary)' }}>CONTROLLO DEL VIDEO</p>
+                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 uppercase">Verifico se si può mostrare qui</p>
               </div>
             ) : view === 'offline' ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30 backdrop-blur-sm p-4 text-center">
                 <CameraOff className="w-6 h-6 mb-3 opacity-50 text-[var(--text-muted)]" />
-                <p className="text-[11px] font-mono uppercase tracking-widest text-[var(--text-secondary)]">{gone ? 'CAMERA WITHDRAWN' : 'CAMERA OFFLINE'}</p>
-                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 max-w-[80%] uppercase">{gone ? 'No longer published at source' : 'The operator has this feed off air'}</p>
+                <p className="text-[11px] font-mono uppercase tracking-widest text-[var(--text-secondary)]">{gone ? 'TELECAMERA RIMOSSA' : 'TELECAMERA SPENTA'}</p>
+                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 max-w-[80%] uppercase">{gone ? 'La pagina originale non esiste più' : 'Il gestore non sta trasmettendo'}</p>
                 {/* No ACCESS TERMINAL button: the page it would open is either
                     showing the same 'offline' banner we just read, or a 404. */}
               </div>
             ) : view === 'external' ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30 backdrop-blur-sm p-4 text-center">
                 <ExternalLink className="w-6 h-6 mb-3 opacity-50" style={{ color: 'var(--gold-primary)' }} />
-                <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--gold-primary)' }}>SECURE FEED ENCRYPTED</p>
-                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 max-w-[80%] uppercase">This feed requires external clearance</p>
+                <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--gold-primary)' }}>VIDEO SUL SITO DEL GESTORE</p>
+                <p className="text-[9px] font-mono text-[var(--text-muted)] mt-2 max-w-[80%] uppercase">Il gestore non consente di riprodurlo dentro OSIRIS.</p>
                 <a 
                   href={externalFeedUrl} 
                   target="_blank" 
@@ -283,18 +296,17 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                   className="mt-4 px-4 py-2 rounded text-[10px] font-mono font-bold tracking-widest transition-all hover:bg-white/10"
                   style={{ border: '1px solid var(--border-primary)', color: 'var(--gold-primary)' }}
                 >
-                  ACCESS TERMINAL
+                  APRI IL VIDEO ORIGINALE ↗
                 </a>
               </div>
             ) : error ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black/90">
                 <div className="text-center">
                   <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mb-2 mx-auto"><Camera className="w-4 h-4 text-red-400" /></div>
-                  <span className="text-[10px] font-mono text-red-400 tracking-widest block mb-1">FEED UNAVAILABLE</span>
-                  <span className="text-[9px] font-mono text-[var(--text-muted)]">Camera may be offline or restricted</span>
-                  <button onClick={() => { setError(false); setRetryCount(c => c + 1); }} className="block mx-auto mt-3 px-3 py-1 text-[9px] font-mono text-[#7E57C2] border border-[#7E57C2]/30 rounded hover:bg-[#7E57C2]/10 transition-colors tracking-wider">
-                    RETRY
-                  </button>
+                  <span className="text-[10px] font-mono text-red-400 tracking-widest block mb-1">IMMAGINE NON DISPONIBILE</span>
+                  <span className="text-[9px] font-mono text-[var(--text-muted)]">La sorgente potrebbe essere spenta o limitare l’accesso.</span>
+                  <button onClick={() => { setError(false); setRetryCount(c => c + 1); }} className="block mx-auto mt-3 px-3 py-1 text-[9px] font-mono text-[#7E57C2] border border-[#7E57C2]/30 rounded hover:bg-[#7E57C2]/10 transition-colors tracking-wider">RIPROVA</button>
+                  {sourcePageUrl && <a href={sourcePageUrl} target="_blank" rel="noopener noreferrer" className="block mx-auto mt-3 text-[10px] font-mono text-[var(--gold-primary)] underline">Apri sul sito originale ↗</a>}
                 </div>
               </div>
             ) : streamType === 'hls' ? (
@@ -304,6 +316,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                 autoPlay
                 muted
                 playsInline
+                onError={() => { if (camera.feed_url) setSnapshotFallbackId(camera.id); else setError(true); }}
               />
             ) : streamType === 'mjpeg' && camera.stream_url ? (
               <img
@@ -321,6 +334,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                 muted
                 playsInline
                 loop
+                onError={() => { setLoading(false); setError(true); }}
               />
             ) : streamType === 'iframe' && streamUrl ? (
               <iframe
@@ -348,6 +362,7 @@ export default function CameraViewer({ camera, onClose, onLocate }: CameraViewer
                 </span>
               </div>
             )}
+            {snapshotFallback && !error && <div className="absolute bottom-3 left-3 z-30 bg-black/85 border border-amber-500/50 px-2 py-1 text-[9px] font-mono text-amber-200">VIDEO NON DISPONIBILE · MOSTRO L’IMMAGINE</div>}
 
             {/* Live video is on the operator's own page; this is the way to it. */}
             {watchLiveUrl && !error && !externalOnly && (
